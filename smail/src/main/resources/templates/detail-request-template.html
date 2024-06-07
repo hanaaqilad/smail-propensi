@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="initial-scale=1, width=device-width"/>
+
+    <link rel="stylesheet" href="/css/global.css"/>
+    <link rel="stylesheet" href="/css/detail-surat.css"/>
+    <link rel="stylesheet" href="/css/button.css"/>
+
+    <object th:include="~{fragments/common :: js}" th:remove="tag"></object>
+    <object th:include="~{fragments/common :: css}" th:remove="tag"></object>
+</head>
+
+<body>
+<nav th:replace="~{fragments/navbarLoggedIn :: navbarLoggedIn}"></nav>
+
+<div class="detail-surat-diajukan">
+    <b class="title-container">
+        <span class="title-gradient">Detail</span>
+        <span> Permintaan Template</span>
+    </b>
+
+    <nav th:replace="~{fragments/asset :: asset}"></nav>
+
+    <form th:action="@{/template/request/detail/{id}/updateStatus(id=${requestTemplate.id})}" method="post">
+        <div class="frame-parent">
+            <div class="row">
+                <div class="detail-wrapper">
+                    <div class="detail">ID Surat</div>
+                </div>
+
+                <div class="content-wrapper">
+                    <div class="content" th:text="${requestTemplate.id}"></div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="detail-wrapper">
+                    <div class="detail">Jenis Surat</div>
+                </div>
+
+                <div class="content-wrapper">
+                    <div class="content" th:text="${requestTemplate.kategori}"></div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="detail-wrapper">
+                    <div class="detail">Bahasa</div>
+                </div>
+
+                <div class="content-wrapper">
+                    <div class="content" th:text="${requestTemplate.bahasa}"></div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="detail-wrapper">
+                    <div class="detail">Nama Pengaju</div>
+                </div>
+
+                <div class="content-wrapper">
+                    <div class="content" th:text="${requestTemplate.pengaju.nama}"></div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="detail-wrapper">
+                    <div class="detail">Keperluan</div>
+                </div>
+
+                <div class="content-wrapper">
+                    <div class="content" th:text="${requestTemplate.keperluan}"></div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="detail-wrapper">
+                    <div class="detail">Tanggal Pengajuan</div>
+                </div>
+
+                <div class="content-wrapper">
+                    <div class="content"
+                         th:text="${#dates.format(requestTemplate.tanggalPengajuan, 'dd-MM-yyyy HH:mm')}"></div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="detail-wrapper">
+                    <div class="detail">Deskripsi</div>
+                </div>
+
+                <div class="content-wrapper">
+                    <div class="content" th:text="${requestTemplate.listFieldData[0].value}"></div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="detail-wrapper">
+                    <div class="detail">Status</div>
+                </div>
+
+                <div class="content-wrapper-dropdown" th:if="${requestTemplate.status == 1}">
+                    <select class="content-dropdown" th:field="${requestTemplate.status}"
+                            onchange="toggleReasonField(this)">
+                        <option th:each="entry : ${statusMap.entrySet()}"
+                                th:value="${entry.key}" th:text="${entry.value}"
+                                th:selected="${entry.key == requestTemplate.status}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="content-wrapper-dropdown"
+                     th:if="${requestTemplate.status == 2 || requestTemplate.status == 3}">
+                    <div class="content-dropdown" th:text="${statusMap[requestTemplate.status]}"></div>
+                </div>
+            </div>
+
+            <div class="row" th:if="${requestTemplate.status == 3}">
+                <div class="detail-wrapper">
+                    <div class="detail">Alasan Penolakan</div>
+                </div>
+                <div class="content-wrapper">
+                    <div class="content" th:text="${requestTemplate.alasanPenolakan}"></div>
+                </div>
+            </div>
+
+            <div class="row" id="reasonField" style="display: none;">
+                <div class="detail-wrapper">
+                    <div class="detail">Alasan Penolakan</div>
+                </div>
+
+                <div class="content-wrapper">
+                    <textarea class="content" th:field="${requestTemplate.alasanPenolakan}"
+                              style="width: 100%; height: 50px;"></textarea>
+                </div>
+            </div>
+
+            <div class="frame-button" th:if="${base64PDF != null}">
+                <h3 class="label6">Contoh File Surat</h3>
+                <embed th:attr="src='data:application/pdf;base64,' + ${base64PDF}" type="application/pdf" width="100%"
+                       height="500px">
+            </div>
+
+            <div class="text-center action-buttons" th:if="${requestTemplate.status == 1}">
+                <button type="button" class="primary-long-button" data-bs-toggle="modal"
+                        th:attr="data-bs-target=${'#confirmationModal' + requestTemplate.id}"
+                >Simpan perubahan
+                </button>
+            </div>
+
+            <!-- Modal -->
+            <div class="modal fade" th:id="${'confirmationModal' + requestTemplate.id}" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content" style="width: 450px; height: fit-content; padding: 15px;">
+                        <div class="modal-header" style="border-bottom: none; justify-content: center;">
+                            <h5 class="modal-title"><strong>Ubah Status Request Template</strong></h5>
+                        </div>
+                        <div class="modal-body m-0">
+                            <p style="font-size: large; text-align: center;">
+                                Apakah Anda yakin ingin mengubah status request template ini menjadi <strong
+                                    class="modal-status-display"></strong>?
+                            </p>
+                            <p style="font-size: large; text-align: center;">
+                                <strong>Pastikan status yang dipilih sudah benar.
+                                    Anda tidak bisa mengubah kembali status tersebut.</strong>
+                            </p>
+                        </div>
+                        <div class="modal-footer" style="border-top: none; justify-content: center; gap: 5px">
+                            <button type="button" class="cancel-button m-0" data-bs-dismiss="modal" aria-label="Close">
+                                <div class="primary-text">Cancel</div>
+                            </button>
+                            <button type="submit" class="primary-button m-0">
+                                <div class="primary-text">Ubah</div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+<script th:inline="javascript">
+
+    var modalStatusElement = document.querySelector('.modal-status-display');
+    modalStatusElement.textContent = "Diterima";
+
+    function toggleReasonField(select) {
+        var selectedValue = select.value;
+        var reasonField = document.getElementById("reasonField");
+        var alasanPenolakan = document.getElementById("alasanPenolakan");
+        var modalStatusElement = document.querySelector('.modal-status-display');
+
+        if (selectedValue === '3') {
+            reasonField.style.display = "block";
+            alasanPenolakan.required = true; // Set required attribute
+            modalStatusElement.textContent = "Ditolak";
+        } else {
+            reasonField.style.display = "none";
+            alasanPenolakan.required = false; // Remove required attribute
+            modalStatusElement.textContent = "Diterima";
+        }
+    }
+
+</script>
+</body>
+</html>
+

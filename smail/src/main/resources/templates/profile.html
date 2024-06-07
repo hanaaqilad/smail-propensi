@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="initial-scale=1, width=device-width"/>
+
+    <object th:include="~{fragments/common :: js}" th:remove="tag"></object>
+    <object th:include="~{fragments/common :: css}" th:remove="tag"></object>
+
+    <link rel="stylesheet" th:href="@{/css/global.css}"/>
+    <link rel="stylesheet" th:href="@{/css/riwayat-surat.css}"/>
+</head>
+
+<style>
+.data-group {
+  flex-direction: column;
+  gap: 10px 0;
+  display: flex;
+  margin: 20px auto;
+  width: 80%;
+}
+
+.data-box {
+  border-radius: 8px;
+  background-color: rgba(16, 15, 15, 0.05);
+  border: 2px solid #3a8b5a;
+  padding: 12px 20px;
+}
+
+.data-label {
+  font-weight: 600;
+}
+
+.data-wrap {
+    margin-top: 95px;
+    margin-bottom: 40px;
+}
+
+</style>
+
+<body>
+<nav th:replace="~{fragments/navbarLoggedIn :: navbarLoggedIn}"></nav>
+
+<div class="page-container">
+    <b class="title-container">
+        <span class="title-gradient">Profile</span>
+    </b>
+
+    <nav th:replace="~{fragments/asset :: asset}"></nav>
+
+    <div class="data-wrap">
+        <div class="data-group">
+            <div class="data-label">Nama Lengkap</div>
+            <div class="data-box" th:text="${nama}"></div>
+        </div>
+        <div class="data-group">
+            <div class="data-label" th:text="${role == 'Mahasiswa' ? 'NPM' : 'NIP'}"></div>
+            <div class="data-box" th:text="${id}"></div>
+        </div>
+        <div class="data-group">
+            <div class="data-label">Email</div>
+            <div class="data-box" th:text="${email}"></div>
+        </div>
+        <div class="data-group">
+            <div class="data-label">Role</div>
+            <div class="data-box" th:text="${role}"></div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+</body>
+
+</html>
+    

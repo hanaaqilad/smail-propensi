@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="initial-scale=1, width=device-width"/>
+
+    <link rel="stylesheet" href="/css/global.css"/>
+    <link rel="stylesheet" href="/css/detail-surat.css"/>
+    <link rel="stylesheet" href="/css/button.css"/>
+
+    <object th:include="~{fragments/common :: js}" th:remove="tag"></object>
+    <object th:include="~{fragments/common :: css}" th:remove="tag"></object>
+</head>
+
+<body>
+<nav th:replace="~{fragments/navbarLoggedIn :: navbarLoggedIn}"></nav>
+
+<div class="detail-surat-diajukan">
+    <b class="title-container">
+        <span class="title-gradient">Detail</span>
+        <span> Surat Masuk</span>
+    </b>
+
+    <nav th:replace="~{fragments/asset :: asset}"></nav>
+
+    <div class="frame-parent">
+        <div class="row">
+            <div class="detail-wrapper">
+                <div class="detail">Perihal</div>
+            </div>
+
+            <div class="content-wrapper">
+                <div class="content" th:text="${suratMasuk.perihal}"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="detail-wrapper">
+                <div class="detail">Nomor Surat</div>
+            </div>
+
+            <div class="content-wrapper">
+                <div class="content" th:text="${suratMasuk.nomorArsip}"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="detail-wrapper">
+                <div class="detail">Tanggal Dibuat</div>
+            </div>
+
+            <div class="content-wrapper">
+                <div class="content" th:text="${#dates.format(suratMasuk.tanggalDibuat, 'dd-MM-yyyy HH:mm')}"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="detail-wrapper">
+                <div class="detail">Kategori</div>
+            </div>
+
+            <div class="content-wrapper">
+                <div class="content" th:text="${suratMasuk.kategori}"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="detail-wrapper">
+                <div class="detail">Status</div>
+            </div>
+
+            <div class="content-wrapper">
+                <div class="content" th:if="${suratMasuk.isDisposisi and !suratMasuk.isFollowUp}">Didisposisi</div>
+                <div class="content" th:if="${suratMasuk.isDisposisi and suratMasuk.isFollowUp}">Didisposisi dan
+                    difollow-up
+                </div>
+                <div class="content" th:if="${suratMasuk.isFollowUp and !suratMasuk.isDisposisi}">Difollow-up</div>
+                <div class="content" th:unless="${suratMasuk.isDisposisi or suratMasuk.isFollowUp}">Diarsipkan</div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="detail-wrapper">
+                <div class="detail">Pengirim</div>
+            </div>
+
+            <div class="content-wrapper">
+                <div class="content" th:text="${suratMasuk.pengirim}"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="detail-wrapper">
+                <div class="detail">Nama File</div>
+            </div>
+
+            <div class="content-wrapper">
+                <div class="content" th:text="${suratMasuk.fileName}"></div>
+            </div>
+        </div>
+
+        <div class="row" th:if="${suratMasuk.suratFollowUp != null}">
+            <div class="detail-wrapper">
+                <div class="detail">Surat Follow Up</div>
+            </div>
+
+            <div class="content-wrapper">
+                <a class="content"
+                   th:href="@{'/surat-keluar/detail/' + ${suratMasuk.suratFollowUp.nomorArsip}}"
+                   th:text="${suratMasuk.suratFollowUp.nomorArsip}">
+                </a>
+            </div>
+        </div>
+
+        <div class="row" th:if="${suratMasuk.tembusan.isEmpty() == false}">
+            <div class="detail-wrapper">
+                <div class="detail">Tembusan</div>
+            </div>
+
+            <div class="content-wrapper">
+                <div class="content" th:each="tembusanItem, iterStat : ${suratMasuk.tembusan}"
+                     th:text="${tembusanItem + (iterStat.last ? '' : ', ')}"
+                     th:if="${!#lists.isEmpty(suratMasuk.tembusan)}"
+                     style="width: fit-content; padding-right: 5px;">
+                </div>
+            </div>
+        </div>
+
+        <h3 class="label6" th:if="${suratMasuk.penandatangan != null}">Tanda Tangan</h3>
+
+        <div class="row" th:if="${suratMasuk.penandatangan != null}">
+            <div class="detail-wrapper">
+                <div class="detail">Penandatangan</div>
+            </div>
+
+            <div class="content-wrapper">
+                <div class="content" th:text="${suratMasuk.penandatangan.nama}"></div>
+            </div>
+        </div>
+
+        <div class="frame-button">
+            <h3 class="label6">Preview Surat</h3>
+            <embed th:attr="src='data:application/pdf;base64,' + ${base64PDF}" type="application/pdf" width="100%"
+                   height="500px">
+        </div>
+
+        <div class="text-center action-buttons">
+            <a type="submit" class="primary-long-button"
+               th:if="${suratMasuk.suratFollowUp == null}"
+               th:href="@{'/surat-masuk/follow-up/' + ${suratMasuk.nomorArsip}}"
+               style="color: #fffffe;">
+                Follow Up
+            </a>
+
+            <a type="submit" class="outline-long-button"
+               th:href="@{'/surat-masuk/disposisi/' + ${suratMasuk.nomorArsip}}">Disposisi</a>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+</body>
+</html>

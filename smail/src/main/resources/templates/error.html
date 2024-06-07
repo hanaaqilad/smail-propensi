@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="initial-scale=1, width=device-width"/>
+
+    <object th:include="~{fragments/common :: js}" th:remove="tag"></object>
+    <object th:include="~{fragments/common :: css}" th:remove="tag"></object>
+
+    <link rel="stylesheet" th:href="@{/css/global.css}"/>
+    <link rel="stylesheet" th:href="@{/css/asset.css}"/>
+    <link rel="stylesheet" th:href="@{/css/button.css}"/>
+</head>
+
+<style>
+  .errorCode {
+    align-self: stretch;
+    display: flex;
+    flex-direction: row;
+    text-align: center;
+    justify-content: center;
+    padding: 0 var(--padding-xl);
+    font-size: 150px;
+    color: var(--red-red-1);
+    font-weight: 600;
+  }
+
+  .errorMessage {
+    align-self: stretch;
+    display: flex;
+    flex-direction: row;
+    text-align: center;
+    justify-content: center;
+    padding: 0 var(--padding-xl);
+    font-size: 32px;
+    font-weight: 600;
+    margin: 20px;
+  }
+
+</style>
+
+<body>
+<div class="surat-wrap" style="height: 225px;">
+    <img class="surat-kiri" alt="" src="/images/kiri-red.svg"/>
+    <img class="surat-kanan" alt="" src="/images/kanan-red.svg"/>
+</div>
+
+<div class="errorCode" th:text="${errorCode}"></div>
+<div class="errorMessage" th:text="${errorMessage}"></div>
+
+<a th:href="@{/}" style="margin-top: 30px; margin-bottom: auto; text-decoration: none;">
+    <button type="button" class="primary-long-button" style="width: fit-content;">Kembali ke Beranda</button>
+</a>
+</body>
+
+</html>

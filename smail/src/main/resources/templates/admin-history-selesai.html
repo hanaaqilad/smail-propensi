@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="initial-scale=1, width=device-width"/>
+
+    <link rel="stylesheet" href="/css/global.css"/>
+    <link rel="stylesheet" href="/css/riwayat-surat.css"/>
+    <link rel="stylesheet" href="/css/tabs.css"/>
+    <link rel="stylesheet" href="/css/button.css"/>
+
+    <object th:include="~{fragments/common :: js}" th:remove="tag"></object>
+    <object th:include="~{fragments/common :: css}" th:remove="tag"></object>
+
+    <!-- Datatables -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/2.0.7/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/2.0.7/js/dataTables.bootstrap5.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.7/css/dataTables.bootstrap5.css"/>
+</head>
+
+<body>
+<nav th:replace="~{fragments/navbarLoggedIn :: navbarLoggedIn}"></nav>
+
+<div class="page-container">
+    <b class="title-container">
+        <span class="title-gradient">Daftar</span>
+        <span> Permohonan Surat</span>
+    </b>
+
+    <nav th:replace="~{fragments/asset :: asset}"></nav>
+
+    <div class="content-wrapper" style="margin-inline: 10px;">
+        <div class="tabs-group">
+            <a class="tab-link" th:href="@{/admin/request/all}">Semua</a>
+            <a class="tab-link" th:href="@{/admin/request}">Diajukan</a>
+            <a class="tab-link" th:href="@{/admin/request/cancelled}">Dibatalkan</a>
+            <a class="tab-link" th:href="@{/admin/request/rejected}">Ditolak</a>
+            <a class="tab-link" th:href="@{/admin/request/process}">Diproses</a>
+            <a class="tab-link active" th:href="@{/admin/request/finished}">Selesai</a>
+        </div>
+
+        <br>
+
+        <div class="tab-pane active">
+            <div class="table-container">
+                <table id="adminSelesai" class="table table-bordered" style="width:100%">
+                    <thead>
+                    <tr>
+                        <th style="width: 10%; text-align: center; vertical-align: middle;">ID Surat</th>
+                        <th style="width: 40%; text-align: center; vertical-align: middle;">Jenis Surat</th>
+                        <th style="width: 15%; text-align: center; vertical-align: middle;">Nama Pengaju</th>
+                        <th style="width: 10%; text-align: center; vertical-align: middle;">Bentuk Surat</th>
+                        <th style="width: 15%; text-align: center; vertical-align: middle;">Tanggal Pengajuan</th>
+                        <th style="width: 10%; text-align: center; vertical-align: middle;">Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="requestSurat: ${requestSurats}">
+                        <td th:text="${requestSurat.id}"></td>
+                        <td th:text="${requestSurat.jenisSurat}" style="text-align: left;"></td>
+                        <td>
+                            <span th:text="${requestSurat.pengaju.nama}"></span>
+                        </td>
+                        <td>
+                            <th:block th:each="bentuk, iterStat : ${requestSurat.bentukSurat}">
+                                <span th:text="${bentuk}"></span>
+                                <th:block th:if="${!iterStat.last}">
+                                    <span>, </span>
+                                </th:block>
+                            </th:block>
+                        </td>
+                        <td th:text="${#dates.format(requestSurat.tanggalPengajuan, 'dd-MM-yyyy')}"></td>
+                        <td style="display: flex; justify-content: space-between; border: none;">
+                            <a th:href="@{/admin/detail/{id}/selesai(id=${requestSurat.id})}" class="primary-button">
+                                <div class="primary-text">Detail</div>
+                            </a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+<script> new DataTable('#adminSelesai'); </script>
+</body>
+</html>

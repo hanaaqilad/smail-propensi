@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="initial-scale=1, width=device-width"/>
+
+    <object th:include="~{fragments/common :: js}" th:remove="tag"></object>
+    <object th:include="~{fragments/common :: css}" th:remove="tag"></object>
+
+    <link rel="stylesheet" href="/css/add-template.css" />
+    <link rel="stylesheet" href="/css/riwayat-surat.css"/>
+    <link rel="stylesheet" href="/css/global.css"/>
+    <link rel="stylesheet" href="/css/button.css"/>
+    <link rel="stylesheet" href="/css/checkbox.css" />
+
+</head>
+
+<body>
+
+<nav th:replace="~{fragments/navbarLoggedIn :: navbarLoggedIn}"></nav>
+
+<div class="page-container">
+    <b class="title-container">
+        <span class="title-gradient">Pengajuan</span>
+        <span> Permohonan Surat</span>
+    </b>
+
+    <nav th:replace="~{fragments/asset :: asset}"></nav>
+
+    <div class="form-wrap">
+    <form th:action="@{/request}" th:object="${requestDTO}" method="POST" class="form-request" enctype="multipart/form-data">
+        
+        <div class="form-input-group">
+            <div class="form-input-label">Bahasa</div>
+            <div class="form-input-dropdown">
+                <select name="bahasa" class="form-select" th:field="*{bahasa}">
+                    <option value="">Pilih Bahasa Surat</option>
+                    <option th:each="entry : ${listBahasa}" th:value="${entry.value}" th:text="${entry.value}"></option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-input-group">
+            <div class="form-input-label">Bentuk Surat</div>
+            <div class="frame-parent">
+                <div class="checkbox-wrapper-13" style="flex-direction:row; display: flex;">
+                    <input type="checkbox" id="softCopy" name="bentukSurat" value="Soft Copy" />
+                    <div class="label-group">
+                        <div class="body-14pt">Soft Copy</div>
+                        <div class="body-14pt">Surat dapat diunduh di website ini.</div>
+                    </div>
+                </div>
+                <div class="checkbox-wrapper-13" style="flex-direction:row; display: flex;">
+                    <input type="checkbox" id="hardCopy" name="bentukSurat" value="Hard Copy" />
+                    <div class="label-group">
+                        <div class="body-14pt">Hard Copy</div>
+                        <div class="body-14pt">Surat dapat diambil di kantor administrasi.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-input-group">
+            <div class="form-input-label">Keperluan</div>
+            <input type="text" class="form-input-box" th:field="*{keperluan}" required/>
+        </div>
+
+        <div class="form-input-group">
+            <div class="form-input-label">Kategori Surat</div>
+            <div class="form-input-dropdown">
+                <select id="kategori" name="kategori" class="form-select" th:field="*{kategori}">
+                    <option value="">Pilih Kategori Surat</option>
+                    <option th:each="entry : ${jenisSuratByKategori}" th:value="${entry.key}"
+                            th:text="${entry.key}"></option>
+                </select>
+            </div>
+        </div>
+
+        <div>
+            <div class="form-input-group" id="jenisSuratWrapper">
+                <div class="form-input-label">Jenis Surat</div>
+                <div class="form-input-dropdown">
+                    <select id="jenisSurat" name="jenisSurat" class="form-select" th:field="*{jenisSurat}">
+                        <option value="">Pilih Jenis Surat</option>
+                        <option th:each="jenisSurat : ${jenisSuratByKategori}" th:value="${jenisSurat.value}"
+                                th:text="${jenisSurat.value}"></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="preview-template" class="preview-template">
+            <div class="preview-title">Preview Template</div>
+        </div>
+
+        <div id="listFieldWrapper"></div>
+
+        <div id="reqTemplateWrapper"></div>
+
+        <div class="text-center action-buttons">
+            <button type="submit" class="primary-long-button" style="width: 70%;">Ajukan Surat</button>
+        </div>
+    </form>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+<script th:inline="javascript">
+        /*<![CDATA[*/
+        document.querySelector('.form-request').addEventListener('submit', function(event) {
+            var bahasa = document.querySelector('[name="bahasa"]');
+            var bentukSurat = document.querySelectorAll('[name="bentukSurat"]:checked');
+            var kategori = document.querySelector('[name="kategori"]');
+            var jenisSurat = document.querySelector('[name="jenisSurat"]');
+
+            if (!bahasa.value || bentukSurat.length === 0 || !kategori.value || !jenisSurat.value) {
+                event.preventDefault(); // Prevent form submission
+                alert('Mohon lengkapi semua field sebelum mengajukan surat.');
+            }
+        })
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var kategoriDropdown = document.getElementById('kategori');
+            var jenisSuratWrapper = document.getElementById('jenisSuratWrapper');
+            var jenisSuratDropdown = document.getElementById('jenisSurat');
+            var previewTemplateWrapper = document.getElementById('preview-template');
+            var listFieldWrapper = document.getElementById('listFieldWrapper');
+            var reqTemplateWrapper = document.getElementById('reqTemplateWrapper');
+
+            jenisSuratWrapper.style.display = 'none';
+            previewTemplateWrapper.style.display = 'none';
+            listFieldWrapper.style.display = 'none';
+            reqTemplateWrapper.style.display = 'none';
+
+            kategoriDropdown.addEventListener('change', function () {
+                previewTemplateWrapper.style.display = 'none';
+                listFieldWrapper.style.display = 'none';
+                if (kategoriDropdown.value !== '') {
+                    jenisSuratWrapper.style.display = 'flex';
+                } else {
+                    jenisSuratWrapper.style.display = 'none';
+                }
+
+                jenisSuratDropdown.innerHTML = '';
+
+                var defaultOption = document.createElement('option');
+                defaultOption.text = 'Pilih Jenis Surat';
+                defaultOption.value = '';
+                jenisSuratDropdown.appendChild(defaultOption);
+
+                var selectedKategori = kategoriDropdown.value;
+                var jenisSuratByKategori = /*[[${jenisSuratByKategori}]]*/ {};
+                var jenisSuratList = jenisSuratByKategori[selectedKategori] ?? [];
+
+                if (jenisSuratList) {
+                    jenisSuratList.forEach(function (jenisSurat) {
+                        var option = document.createElement('option');
+                        option.text = jenisSurat;
+                        option.value = jenisSurat;
+                        jenisSuratDropdown.appendChild(option);
+                    });
+
+                    var lainnyaOption = document.createElement('option');
+                    lainnyaOption.text = 'Lainnya';
+                    lainnyaOption.value = 'Lainnya';
+                    jenisSuratDropdown.appendChild(lainnyaOption);
+                }
+            });
+
+            var base64PDF = /*[[${base64PDF}]]*/ '';
+            jenisSuratDropdown.addEventListener('change', function() {
+
+                // Remove all key elements if they exist
+                const keyElements = document.querySelectorAll("[name^='listFieldData'][name$='.key']");
+                keyElements.forEach(element => {
+                    if (element) {
+                        element.remove(); // Safely remove only if the element exists
+                    }
+                });
+
+                // Remove all value elements if they exist
+                const valueElements = document.querySelectorAll("[name^='listFieldData'][name$='.value']");
+                valueElements.forEach(element => {
+                    if (element) {
+                        element.remove(); // Safely remove only if the element exists
+                    }
+                });
+
+                if (jenisSuratDropdown.value == 'Lainnya') {
+                    reqTemplateWrapper.style.display = 'block';
+                    previewTemplateWrapper.style.display = 'none';
+                    listFieldWrapper.style.display = 'none';
+
+                    reqTemplateWrapper.innerHTML = '';
+
+                    var formGroupDiv1 = document.createElement('div');
+                    formGroupDiv1.className = 'form-input-group';
+
+                    var labelDiv = document.createElement('div');
+                    labelDiv.className = 'form-input-label';
+                    labelDiv.textContent = 'Deskripsi Surat';
+
+                    var inputRowDiv = document.createElement('div');
+                    inputRowDiv.className = 'input-row d-flex';
+
+                    var hiddenElement = document.createElement('input');
+                    hiddenElement.type = 'hidden';
+                    hiddenElement.name = 'listFieldData[0].key';
+                    hiddenElement.value = 'Deskripsi Surat';
+
+                    var textArea = document.createElement('textarea');
+                    textArea.className = 'form-control';
+                    textArea.placeholder = 'Beri penjelasan terkait surat yang diajukan sedetail mungkin. Kurangnya informasi yang diberikan dapat mengakibatkan pengajuan surat ditolak.';
+                    textArea.name = 'listFieldData[0].value';
+                    textArea.required = true;
+
+                    // Upload file
+                    var formGroupDiv2 = document.createElement('div');
+                    formGroupDiv2.className = 'form-input-group';
+
+                    var labelDivEx = document.createElement('div');
+                    labelDivEx.className = 'form-input-label';
+                    labelDivEx.textContent = 'Masukkan contoh surat (Optional)';
+                    labelDivEx.style.paddingBottom = '10px';
+
+                    var fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.id = 'file';
+                    fileInput.name = 'file';
+
+                    inputRowDiv.appendChild(hiddenElement);
+                    inputRowDiv.appendChild(textArea);
+                    formGroupDiv1.appendChild(labelDiv);
+                    formGroupDiv1.appendChild(inputRowDiv);
+
+                    formGroupDiv2.appendChild(labelDivEx);
+                    formGroupDiv2.appendChild(fileInput);
+
+                    reqTemplateWrapper.appendChild(formGroupDiv1);
+                    reqTemplateWrapper.appendChild(formGroupDiv2);
+
+                    reqTemplateWrapper.style.display = 'block';
+                    reqTemplateWrapper.style.width = '100%';
+
+                } else if (jenisSuratDropdown.value !== '') {
+                    previewTemplateWrapper.style.display = 'block';
+                    listFieldWrapper.style.display = 'block';
+                    reqTemplateWrapper.style.display = 'none';
+
+                    // Mendapatkan jenis surat yang dipilih
+                    var selectedJenisSurat = jenisSuratDropdown.value;
+
+                    // Mendapatkan kategori surat yang dipilih
+                    var selectedKategori = kategoriDropdown.value;
+
+                    // Mendapatkan template surat yang sesuai dengan jenis surat yang dipilih
+                    var listTemplateSurat = /*[[${listTemplateSurat}]]*/ [];
+                    var selectedTemplate = listTemplateSurat.find(function(template) {
+                        return template.namaTemplate === selectedJenisSurat && template.kategori === selectedKategori;
+                    });
+
+                    console.log("===== selectedTemplate:", selectedTemplate)
+
+                    // Jika template ditemukan, tampilkan preview PDF
+                    if (selectedTemplate) {
+                        var base64PDF = selectedTemplate.file;
+                        var listFieldData = selectedTemplate.listField;
+
+                        previewTemplateWrapper.innerHTML = `
+                        <div id="preview-title" class="preview-title">Preview Template</div>
+                            <embed src='data:application/pdf;base64,${base64PDF}' type="application/pdf" width="100%" height="500px">
+                        `;
+
+                        listFieldWrapper.innerHTML = '';
+
+                        if (selectedTemplate && selectedTemplate.listField) {
+                            selectedTemplate.listField.forEach(function(field, index) {
+                                // Create input element for each field
+                                var inputDiv = document.createElement('div');
+                                inputDiv.className = 'form-input-group';
+
+                                var labelDiv = document.createElement('div');
+                                labelDiv.className = 'form-input-label';
+                                labelDiv.textContent = field;
+                                console.log("===== labelDiv:", field)
+
+                                var hiddenElement = document.createElement('input');
+                                hiddenElement.type = 'hidden';
+                                hiddenElement.className = 'form-control';
+                                hiddenElement.name = `listFieldData[${index}].key`; // Menggunakan index
+                                hiddenElement.field = field;
+                                console.log("===== hiddenElement field:", field)
+
+                                hiddenElement.value = field;
+                                console.log("===== hiddenElement value:", field)
+
+                                var inputElement = document.createElement('input');
+                                inputElement.type = 'text';
+                                inputElement.className = 'form-input-box';
+                                inputElement.name = `listFieldData[${index}].value`; // Menggunakan index
+                                inputElement.required = true;
+
+                                inputDiv.appendChild(labelDiv);
+                                inputDiv.appendChild(hiddenElement);
+                                inputDiv.appendChild(inputElement);
+                                listFieldWrapper.appendChild(inputDiv);
+                            });
+
+                            listFieldWrapper.style.display = 'block';
+                        }
+                    } else {
+                        previewTemplateWrapper.innerHTML = '<div class="error-message">Template tidak ditemukan untuk jenis surat yang dipilih.</div>';
+                    }
+                } else {
+                    previewTemplateWrapper.style.display = 'none';
+                    listFieldWrapper.style.display = 'none';
+                }
+            });
+        });
+        /*]]>*/
+
+
+</script>
+</body>
+</html>
+
